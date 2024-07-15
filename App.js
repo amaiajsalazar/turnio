@@ -1,26 +1,79 @@
-import { StatusBar } from "expo-status-bar";
-import { View, StyleSheet, Pressable, Text } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import { ListaTurnos } from "./components/ListaTurnos";
+import { View, StyleSheet, Text, ActivityIndicator } from "react-native";
+import * as FileSystem from "expo-file-system";
+import { Asset } from "expo-asset";
+import { Suspense, useEffect, useState } from "react";
+import { SQLiteProvider } from "expo-sqlite/next";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { NavigationContainer } from "@react-navigation/native";
+import { TurnioLogo } from "./components/TurnioLogo";
+import { TurnosScreen } from "./screens/TurnosScreen";
+
+const Stack = createNativeStackNavigator();
+
+const loadDatabase = async () => {
+  const dbName = "mySQLiteDB.db";
+  const dbAsset = require("./assets/mySQLiteDB.db");
+  const dbUri = Asset.fromModule(dbAsset).uri;
+  const dbFilePath = `${FileSystem.documentDirectory}SQLite/${dbName}`;
+
+  const fileInfo = await FileSystem.getInfoAsync(dbFilePath);
+  if (!fileInfo.exists) {
+    await FileSystem.makeDirectoryAsync(
+      FileSystem.documentDirectory + "SQLite",
+      { intermediates: true }
+    );
+    await FileSystem.downloadAsync(dbUri, dbFilePath);
+  }
+  return dbFilePath;
+};
 
 export default function App() {
+  const [dbLoaded, setDbLoaded] = useState(false);
+
+  useEffect(() => {
+    loadDatabase()
+      .then(() => setDbLoaded(true))
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
+  if (!dbLoaded) {
+    return (
+      <View style={{ flex: 1 }}>
+        <ActivityIndicator color={"red"} size={"large"} />
+        <Text>Cargando base de datos...</Text>
+      </View>
+    );
+  }
+
   return (
-    <SafeAreaProvider>
-      <View style={styles.container}>
-        <StatusBar style="auto" />
-        <ListaTurnos />
-      </View>
-      <View style={styles.addBtnView}>
-        <Pressable
-          style={styles.addBtn}
-          onPress={() => {
-            /* Your onPress action here */
-          }}
+    <>
+      <NavigationContainer>
+        <Suspense
+          fallback={
+            <View style={{ flex: 1 }}>
+              <ActivityIndicator color={"red"} size={"large"} />
+              <Text>Cargando base de datos...</Text>
+            </View>
+          }
         >
-          <Text style={styles.addBtnText}>+</Text>
-        </Pressable>
-      </View>
-    </SafeAreaProvider>
+          <SQLiteProvider databaseName="mySQLiteDB.db" useSuspense>
+            <Stack.Navigator>
+              <Stack.Screen
+                name="TurnosScreen"
+                component={TurnosScreen}
+                options={{
+                  title: "Turnos",
+                  headerLargeStyle: true,
+                  headerRight: () => <TurnioLogo width={100} height={20} />,
+                }}
+              />
+            </Stack.Navigator>
+          </SQLiteProvider>
+        </Suspense>
+      </NavigationContainer>
+    </>
   );
 }
 

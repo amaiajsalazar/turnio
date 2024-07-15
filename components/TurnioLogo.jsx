@@ -1,13 +1,7 @@
 import * as React from "react"
 import Svg, { Path } from "react-native-svg"
 export const TurnioLogo = (props) => (
-  <Svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={170}
-    height={60}
-    viewBox="0 0 2000 800"
-    {...props}
-  >
+  <Svg xmlns="http://www.w3.org/2000/svg" viewBox="249 232 1562 311" {...props}>
     <Path fill="#69ABC4" d="M250 501h1057v37l-65 1H251l-1-1-1-12v-23z" />
     <Path
       fill="#0B4F82"
