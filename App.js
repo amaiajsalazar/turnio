@@ -1,18 +1,19 @@
-import { View, StyleSheet, Text, ActivityIndicator } from "react-native";
+import { View, StyleSheet, Text, ActivityIndicator, Pressable, TouchableHighlight } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { Asset } from "expo-asset";
 import { Suspense, useEffect, useState } from "react";
 import { SQLiteProvider } from "expo-sqlite/next";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer } from "@react-navigation/native";
-import { TurnioLogo } from "./components/TurnioLogo";
+import { TurnioLogo } from "./assets/TurnioLogo";
 import { TurnosScreen } from "./screens/TurnosScreen";
+import { NewTurnoForm, TurnoAddBtn } from "./screens/NewTurnoForm";
 
 const Stack = createNativeStackNavigator();
 
 const loadDatabase = async () => {
-  const dbName = "mySQLiteDB.db";
-  const dbAsset = require("./assets/mySQLiteDB.db");
+  const dbName = "turnio.db";
+  const dbAsset = require("./assets/turnio.db");
   const dbUri = Asset.fromModule(dbAsset).uri;
   const dbFilePath = `${FileSystem.documentDirectory}SQLite/${dbName}`;
 
@@ -58,7 +59,7 @@ export default function App() {
             </View>
           }
         >
-          <SQLiteProvider databaseName="mySQLiteDB.db" useSuspense>
+          <SQLiteProvider databaseName="turnio.db" useSuspense>
             <Stack.Navigator>
               <Stack.Screen
                 name="TurnosScreen"
@@ -69,7 +70,18 @@ export default function App() {
                   headerRight: () => <TurnioLogo width={100} height={20} />,
                 }}
               />
+              <Stack.Screen
+                name="NewTurnoForm"
+                component={NewTurnoForm}
+                options={{
+                  title: "Añadir Turno",
+                  headerLargeStyle: true,
+                  headerRight: () => <TurnioLogo width={100} height={20} />,
+                }}
+              />
+
             </Stack.Navigator>
+            <TurnoAddBtn />
           </SQLiteProvider>
         </Suspense>
       </NavigationContainer>

@@ -1,30 +1,39 @@
-import { View, ActivityIndicator, FlatList, StyleSheet, Text, Touchable, TouchableOpacity } from "react-native";
-import { TurnoCard } from "./TurnoCard";
+import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { Turno } from "../types";
 import { IconoTurno } from "./IconoTurno";
 
-
-export function ListaTurnos({ turnos, deleteTurno }: { turnos: Turno[], deleteTurno: (id: number) => Promise<void> }) {
-
+export function ListaTurnos({
+  turnos,
+  deleteTurno,
+}: {
+  turnos: Turno[];
+  deleteTurno: (id: number) => Promise<void>;
+}) {
   return (
     <View style={{ marginTop: 10 }}>
       {turnos.map((turno) => {
         return (
-          <TouchableOpacity key={turno.turno_id} style={styles.turno}>
+          <TouchableOpacity
+            key={turno.turno_id}
+            style={styles.turno}
+            onLongPress={() => deleteTurno(turno.turno_id)}
+          >
             <IconoTurno turno={turno} />
             <View style={{ paddingLeft: 10 }}>
               <Text style={styles.nombre}>{turno.nombre}</Text>
-              <Text>({turno.hora_ini} - {turno.hora_fin})
+              <Text>
+                ({turno.hora_ini} - {turno.hora_fin})
                 {turno.partido !== 0 && (
-                  <Text>({turno.hora_ini_partido} - {turno.hora_fin_partido})</Text>
+                  <Text>
+                    ({turno.hora_ini_partido} - {turno.hora_fin_partido})
+                  </Text>
                 )}
               </Text>
             </View>
           </TouchableOpacity>
-        )
-      }
-      )}
-    </View >
+        );
+      })}
+    </View>
   );
 }
 
@@ -37,7 +46,7 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     marginHorizontal: 10,
     borderRadius: 10,
-    elevation: 4
+    elevation: 4,
   },
 
   nombre: {
@@ -51,5 +60,5 @@ const styles = StyleSheet.create({
 
   turno_info: {
     marginLeft: 10,
-  }
+  },
 });
