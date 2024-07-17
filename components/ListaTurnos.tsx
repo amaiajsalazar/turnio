@@ -1,6 +1,8 @@
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { Turno } from "../types";
 import { IconoTurno } from "./IconoTurno";
+import React from "react";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 
 export function ListaTurnos({
   turnos,
@@ -9,6 +11,8 @@ export function ListaTurnos({
   turnos: Turno[];
   deleteTurno: (id: number) => Promise<void>;
 }) {
+  const navigation = useNavigation<NavigationProp<any>>();
+
   return (
     <View style={{ marginTop: 10 }}>
       {turnos.map((turno) => {
@@ -17,6 +21,7 @@ export function ListaTurnos({
             key={turno.turno_id}
             style={styles.turno}
             onLongPress={() => deleteTurno(turno.turno_id)}
+            onPress={() => navigation.navigate('NewTurnoForm', { turno })} // Step 3
           >
             <IconoTurno turno={turno} />
             <View style={{ paddingLeft: 10 }}>

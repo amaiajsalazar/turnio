@@ -1,5 +1,6 @@
 import {
   View,
+  TouchableHighlight,
   StyleSheet,
   Text,
   TextInput,
@@ -7,53 +8,44 @@ import {
   TouchableOpacity,
   Modal,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useState } from "react";
 import { Turno } from "../types";
-import { useNavigation, NavigationProp, useRoute } from "@react-navigation/native";
+import { useSQLiteContext } from "expo-sqlite";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { TimerPickerModal } from "react-native-timer-picker";
+import { ScrollView } from 'react-native-gesture-handler';
 import React from "react";
-import ColorPicker, { Panel5 } from 'reanimated-color-picker';
-import { useTurno } from "../contexts/TurnoContext";
+import ColorPicker, { Panel1, Swatches, Preview, OpacitySlider, HueSlider } from 'reanimated-color-picker';
 
 
-export function NewTurnoForm() {
-  const route = useRoute();
-  const { turno } = route.params as { turno?: Turno } || null;
+export function NewTurnoForm({
+  insertTurno,
+}: {
+  insertTurno(turno: Turno): Promise<void>;
+}) {
+  const insets = useSafeAreaInsets();
 
-  const navigation = useNavigation<NavigationProp<any>>();
-
-  const { insertTurno, updateTurno } = useTurno();
-
-  const [partidoSelected, setPartidoSelected] = useState<number>(turno && turno.partido ? turno.partido : 0);
-
-  const [turnoForm, setTurnoForm] = useState<Turno>({
-    turno_id: turno && turno.turno_id ? turno.turno_id : 0,
-    nombre: turno && turno.nombre ? turno.nombre : "",
-    hora_ini: turno && turno.hora_ini ? turno.hora_ini : "",
-    hora_fin: turno && turno.hora_fin ? turno.hora_fin : "",
-    color: turno && turno.color ? turno.color : "#bbbbbb",
-    abreviatura: turno && turno.abreviatura ? turno.abreviatura : "",
-    descanso: turno && turno.descanso ? turno.descanso : "",
-    partido: turno && turno.partido ? turno.partido : 0,
-    hora_ini_partido: turno && turno.hora_ini_partido ? turno.hora_ini_partido : null,
-    hora_fin_partido: turno && turno.hora_fin_partido ? turno.hora_fin_partido : null,
-    ingresos_hora: turno && turno.ingresos_hora ? turno.ingresos_hora : null,
-    ingresos_hora_extra: turno && turno.ingresos_hora_extra ? turno.ingresos_hora_extra : null,
+  const [isAddingTurno, setIsAddingTurno] = useState<boolean>(false);
+  const [partidoSelected, setPartidoSelected] = useState<number>(0);
+  const [newTurno, setNewTurno] = useState<Turno>({
+    turno_id: 0,
+    nombre: "",
+    hora_ini: "",
+    hora_fin: "",
+    color: "",
+    abreviatura: "",
+    descanso: 0,
+    partido: 0,
+    hora_ini_partido: null,
+    hora_fin_partido: null,
+    ingresos_hora: null,
+    ingresos_hora_extra: null,
   });
 
-  console.log(turno);
-  console.log(turnoForm);
-
-  //hora_ini, hora_fin, hora_ini_partido, hora_fin_partido, descanso
   const [showPicker, setShowPicker] = useState<boolean[]>([false, false, false, false, false]);
-  const [alarmStrings, setAlarmStrings] = useState<(string | null)[]>([
-    turno ? turno.hora_ini : "00:00",
-    turno ? turno.hora_fin : "00:00",
-    turno ? turno.hora_ini_partido : null,
-    turno ? turno.hora_fin_partido : null,
-    turno ? turno.descanso : "00:00"
-  ]);
-  const [turnoColor, setTurnoColor] = useState<string>(turno ? turno.color ?? "#bbbbbb" : "#bbbbbb");
+  const [alarmStrings, setAlarmStrings] = useState<(string | null)[]>([null, null, null, null, null]);
+  const [turnoColor, setTurnoColor] = useState<string>("#bbbbbb");
   const [showModal, setShowModal] = useState(false);
 
   const onSelectColor = ({ hex }) => {
@@ -79,8 +71,10 @@ export function NewTurnoForm() {
     return timeParts.join(":");
   };
 
+  const db = useSQLiteContext();
+
   function handleInputChange(key: keyof Turno, value: string | number): void {
-    setTurnoForm((prevTurno) => ({
+    setNewTurno((prevTurno) => ({
       ...prevTurno,
       [key]: value,
     }));
@@ -88,36 +82,23 @@ export function NewTurnoForm() {
 
   async function handleSave() {
     {
-      turnoForm.hora_ini = alarmStrings[0] || "00:00";
-      turnoForm.hora_fin = alarmStrings[1] || "00:00";
-      turnoForm.hora_ini_partido = alarmStrings[2] || null;
-      turnoForm.hora_fin_partido = alarmStrings[3] || null;
-      turnoForm.partido = partidoSelected;
-      turnoForm.descanso = alarmStrings[4] || "0:00";
-      turnoForm.color = turnoColor;
-
-      console.log("HANDLE SAVE:");
-      console.log(turnoForm);
-      if (turnoForm.turno_id !== 0) {
-        await updateTurno(turnoForm);
-      } else {
-        await insertTurno(turnoForm);
-      }
-      setTurnoForm({
+      console.log(newTurno);
+      await insertTurno(newTurno);
+      setNewTurno({
         turno_id: 0,
         nombre: "",
-        hora_ini: "00:00",
-        hora_fin: "00:00",
-        color: "#bbbbbb",
-        abreviatura: "00:00",
-        descanso: "00:00",
+        hora_ini: "",
+        hora_fin: "",
+        color: "",
+        abreviatura: "",
+        descanso: 0,
         partido: 0,
         hora_ini_partido: null,
         hora_fin_partido: null,
         ingresos_hora: null,
         ingresos_hora_extra: null,
       });
-      navigation.navigate('TurnosScreen');
+      setIsAddingTurno(false);
     }
   }
 
@@ -158,7 +139,7 @@ export function NewTurnoForm() {
         <TextInput
           style={[styles.inputText, { width: '80%' }]}
           placeholder="Nombre del turno"
-          value={turnoForm.nombre}
+          value={newTurno.nombre}
           onChangeText={(value) => handleInputChange("nombre", value)}
         />
       </View>
@@ -177,15 +158,11 @@ export function NewTurnoForm() {
           visible={showPicker[0]}
           setIsVisible={(value) => handlePickerCancel(0)}
           onConfirm={(pickedDuration) => handlePickerConfirm(0, pickedDuration)}
-          modalTitle="Inicio turno"
+          modalTitle="Hora de inicio"
           onCancel={() => handlePickerCancel(0)}
           closeOnOverlayPress
           styles={{
             theme: "dark",
-          }}
-          initialValue={{
-            hours: parseInt((alarmStrings[0] || "00:00").split(":")[0]),
-            minutes: parseInt((alarmStrings[0] || "00:00").split(":")[1]),
           }}
           confirmButtonText="Confirmar"
           cancelButtonText="Cancelar"
@@ -207,15 +184,11 @@ export function NewTurnoForm() {
           visible={showPicker[1]}
           setIsVisible={(value) => handlePickerCancel(1)}
           onConfirm={(pickedDuration) => handlePickerConfirm(1, pickedDuration)}
-          modalTitle="Fin turno"
+          modalTitle="Hora de inicio"
           onCancel={() => handlePickerCancel(1)}
           closeOnOverlayPress
           styles={{
             theme: "dark",
-          }}
-          initialValue={{
-            hours: parseInt((alarmStrings[1] || "00:00").split(":")[0]),
-            minutes: parseInt((alarmStrings[1] || "00:00").split(":")[1]),
           }}
           confirmButtonText="Confirmar"
           cancelButtonText="Cancelar"
@@ -239,15 +212,11 @@ export function NewTurnoForm() {
           visible={showPicker[4]}
           setIsVisible={(value) => handlePickerCancel(4)}
           onConfirm={(pickedDuration) => handlePickerConfirm(4, pickedDuration)}
-          modalTitle="Descanso"
+          modalTitle="Hora de inicio"
           onCancel={() => handlePickerCancel(4)}
           closeOnOverlayPress
           styles={{
             theme: "dark",
-          }}
-          initialValue={{
-            hours: parseInt((alarmStrings[4] || "00:00").split(":")[0]),
-            minutes: parseInt((alarmStrings[4] || "00:00").split(":")[1]),
           }}
           confirmButtonText="Confirmar"
           cancelButtonText="Cancelar"
@@ -281,15 +250,11 @@ export function NewTurnoForm() {
             visible={showPicker[2]}
             setIsVisible={(value) => handlePickerCancel(2)}
             onConfirm={(pickedDuration) => handlePickerConfirm(2, pickedDuration)}
-            modalTitle="Inicio partido"
+            modalTitle="Hora de inicio"
             onCancel={() => handlePickerCancel(2)}
             closeOnOverlayPress
             styles={{
               theme: "dark",
-            }}
-            initialValue={{
-              hours: parseInt((alarmStrings[2] || "00:00").split(":")[0]),
-              minutes: parseInt((alarmStrings[2] || "00:00").split(":")[1]),
             }}
             confirmButtonText="Confirmar"
             cancelButtonText="Cancelar"
@@ -311,15 +276,11 @@ export function NewTurnoForm() {
             visible={showPicker[3]}
             setIsVisible={(value) => handlePickerCancel(3)}
             onConfirm={(pickedDuration) => handlePickerConfirm(3, pickedDuration)}
-            modalTitle="Fin partido"
+            modalTitle="Hora de inicio"
             onCancel={() => handlePickerCancel(3)}
             closeOnOverlayPress
             styles={{
               theme: "dark",
-            }}
-            initialValue={{
-              hours: parseInt((alarmStrings[3] || "00:00").split(":")[0]),
-              minutes: parseInt((alarmStrings[3] || "00:00").split(":")[1]),
             }}
             confirmButtonText="Confirmar"
             cancelButtonText="Cancelar"
@@ -335,10 +296,9 @@ export function NewTurnoForm() {
         <View style={{ flexDirection: "row", alignItems: "center", marginRight: 10 }}>
           <Text style={styles.label}>Abreviatura:</Text>
           <TextInput
-            style={[styles.inputText, { textAlign: "center" }]}
-            value={turnoForm.abreviatura}
+            style={styles.inputText}
+            value={newTurno.abreviatura}
             onChangeText={(value) => handleInputChange("abreviatura", value)}
-            maxLength={1}
           />
         </View>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -357,32 +317,41 @@ export function NewTurnoForm() {
           </TouchableOpacity>
         </View>
       </View>
-      <Modal visible={showModal} animationType='fade' transparent={true}>
+      <Modal visible={showModal} animationType='slide' transparent={true}>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <ColorPicker style={{ justifyContent: "center" }} value='red' onComplete={onSelectColor}>
-              <Panel5 />
+              {/* Pass onSelectColor to Swatches to handle color selection */}
+              <Swatches onSelect={(color) => {
+                onSelectColor(color); // Handle color selection
+                setShowModal(false); // Close the modal
+              }} />
             </ColorPicker>
-            <Button title='Ok' onPress={() => setShowModal(false)} />
+            {/* Removed the Ok button since it's no longer needed */}
           </View>
         </View>
       </Modal>
 
-      <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-        <TouchableOpacity style={{ paddingVertical: 10, width: "40%" }}
-          onPress={() => navigation.navigate('TurnosScreen')} // Step 3
-        >
-          <View style={{ backgroundColor: "#62aac0", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 10 }}>
-            <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16, textAlign: "center" }}>CANCELAR</Text>
-          </View>
-        </TouchableOpacity >
-        <TouchableOpacity style={{ paddingVertical: 10, width: "40%" }} onPress={handleSave}>
-          <View style={{ backgroundColor: "#054b7f", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 10 }}>
-            <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16, textAlign: "center" }}>GUARDAR</Text>
-          </View>
-        </TouchableOpacity >
-      </View>
+      <Button title="Save" onPress={handleSave} />
     </View >
+  );
+}
+
+export function TurnoAddBtn() {
+  const navigation = useNavigation<NavigationProp<any>>();
+
+  return (
+    <View style={styles.addBtnView}>
+      <TouchableHighlight
+        underlayColor="#044b7f"
+        style={styles.addBtn}
+        onPress={() => {
+          navigation.navigate("NewTurnoForm");
+        }}
+      >
+        <Text style={styles.addBtnText}>+</Text>
+      </TouchableHighlight>
+    </View>
   );
 }
 
@@ -393,6 +362,19 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
+  },
+  addBtn: {
+    backgroundColor: "#63aac0",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 15, // Makes it circular
+    elevation: 5, // Adds shadow for Android (optional)
+  },
+  addBtnView: { position: "absolute", right: 30, bottom: 30 },
+  addBtnText: {
+    color: "white",
+    textAlign: "center",
+    fontSize: 32,
   },
   inputText: {
     paddingVertical: 5,
@@ -439,6 +421,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 20,
     padding: 20,
+    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

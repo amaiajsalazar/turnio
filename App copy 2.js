@@ -8,7 +8,6 @@ import { NavigationContainer } from "@react-navigation/native";
 import { TurnioLogo } from "./assets/TurnioLogo";
 import { TurnosScreen } from "./screens/TurnosScreen";
 import { NewTurnoForm } from "./screens/NewTurnoForm";
-import { TurnoProvider } from "./contexts/TurnoContext";
 
 const Stack = createNativeStackNavigator();
 
@@ -19,7 +18,6 @@ const loadDatabase = async () => {
   const dbFilePath = `${FileSystem.documentDirectory}SQLite/${dbName}`;
 
   const fileInfo = await FileSystem.getInfoAsync(dbFilePath);
-
   if (!fileInfo.exists) {
     await FileSystem.makeDirectoryAsync(
       FileSystem.documentDirectory + "SQLite",
@@ -37,7 +35,7 @@ export default function App() {
     loadDatabase()
       .then(() => setDbLoaded(true))
       .catch((error) => {
-        console.log("Error loading database:", error);
+        console.log(error);
       });
   }, []);
 
@@ -62,28 +60,26 @@ export default function App() {
           }
         >
           <SQLiteProvider databaseName="turnio.db" useSuspense>
-            <TurnoProvider>
-              <Stack.Navigator>
-                <Stack.Screen
-                  name="TurnosScreen"
-                  component={TurnosScreen}
-                  options={{
-                    title: "Turnos",
-                    headerLargeStyle: true,
-                    headerRight: () => <TurnioLogo width={100} height={20} />,
-                  }}
-                  />
-                <Stack.Screen
-                  name="NewTurnoForm"
-                  component={NewTurnoForm}
-                  options={{
-                    title: "Añadir Turno",
-                    headerLargeStyle: true,
-                    headerRight: () => <TurnioLogo width={100} height={20} />,
-                  }}
-                  />
-              </Stack.Navigator>
-            </TurnoProvider>
+            <Stack.Navigator>
+              <Stack.Screen
+                name="TurnosScreen"
+                component={TurnosScreen}
+                options={{
+                  title: "Turnos",
+                  headerLargeStyle: true,
+                  headerRight: () => <TurnioLogo width={100} height={20} />,
+                }}
+              />
+              <Stack.Screen
+                name="NewTurnoForm"
+                component={NewTurnoForm}
+                options={{
+                  title: "Añadir Turno",
+                  headerLargeStyle: true,
+                  headerRight: () => <TurnioLogo width={100} height={20} />,
+                }}
+              />
+            </Stack.Navigator>
           </SQLiteProvider>
         </Suspense>
       </NavigationContainer>

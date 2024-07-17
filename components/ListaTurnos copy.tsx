@@ -25,9 +25,9 @@ export function ListaTurnos() {
 
 
   // const turnosEstaticos = [
-  //   { turno_id: 1, nombre: "Mañana", hora_ini: "08:00", hora_fin: "14:00", color: "#32a852", abreviatura: "M", mins_descanso: 30, partido: false, hora_ini_partido: null, hora_fin_partido: null, ingresos_hora: null, ingresos_hora_extra: null },
-  //   { turno_id: 2, nombre: "Tarde", hora_ini: "14:00", hora_fin: "20:00", color: "#f7b731", abreviatura: "T", mins_descanso: 30, partido: false, hora_ini_partido: null, hora_fin_partido: null, ingresos_hora: null, ingresos_hora_extra: null },
-  //   { turno_id: 3, nombre: "Noche", hora_ini: "20:00", hora_fin: "02:00", color: "#e84118", abreviatura: "N", mins_descanso: 30, partido: false, hora_ini_partido: null, hora_fin_partido: null, ingresos_hora: null, ingresos_hora_extra: null },
+  //   { turno_id: 1, nombre: "Mañana", hora_ini: "08:00", hora_fin: "14:00", color: "#32a852", abreviatura: "M", descanso: 30, partido: false, hora_ini_partido: null, hora_fin_partido: null, ingresos_hora: null, ingresos_hora_extra: null },
+  //   { turno_id: 2, nombre: "Tarde", hora_ini: "14:00", hora_fin: "20:00", color: "#f7b731", abreviatura: "T", descanso: 30, partido: false, hora_ini_partido: null, hora_fin_partido: null, ingresos_hora: null, ingresos_hora_extra: null },
+  //   { turno_id: 3, nombre: "Noche", hora_ini: "20:00", hora_fin: "02:00", color: "#e84118", abreviatura: "N", descanso: 30, partido: false, hora_ini_partido: null, hora_fin_partido: null, ingresos_hora: null, ingresos_hora_extra: null },
   // ]
 
   // useEffect(() => {
