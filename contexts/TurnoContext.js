@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useSQLiteContext } from 'expo-sqlite';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useSQLiteContext } from "expo-sqlite";
 
 const TurnoContext = createContext();
 
@@ -16,7 +16,7 @@ export const TurnoProvider = ({ children }) => {
   const getTurnos = async () => {
     const result = await db.getAllAsync("SELECT * FROM turnos");
     setTurnos(result);
-    // console.log(result);
+    console.log(result);
   };
 
   const insertTurno = async (newTurno) => {
@@ -72,7 +72,9 @@ export const TurnoProvider = ({ children }) => {
   };
 
   return (
-    <TurnoContext.Provider value={{ turnos, insertTurno, deleteTurno, updateTurno }}>
+    <TurnoContext.Provider
+      value={{ turnos, insertTurno, deleteTurno, updateTurno }}
+    >
       {children}
     </TurnoContext.Provider>
   );

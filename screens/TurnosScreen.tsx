@@ -1,18 +1,23 @@
 import { View, StyleSheet, TouchableHighlight, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ListaTurnos } from "../components/ListaTurnos";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useTurno } from "../contexts/TurnoContext";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 
 export function TurnosScreen() {
   const insets = useSafeAreaInsets();
   const { turnos, deleteTurno } = useTurno();
+  const [sortedTurnos, setSortedTurnos] = useState(turnos);
+
+  useEffect(() => {
+    setSortedTurnos(turnos);
+  }, [turnos]);
 
   return (
     <>
       <View style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
-        <ListaTurnos turnos={turnos} deleteTurno={deleteTurno} />
+        <ListaTurnos turnos={sortedTurnos} deleteTurno={deleteTurno} />
       </View>
       <TurnoAddBtn />
     </>

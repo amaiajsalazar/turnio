@@ -1,8 +1,10 @@
-import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
-import { Turno } from "../types";
-import { IconoTurno } from "./IconoTurno";
-import React from "react";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import DraggableFlatList from 'react-native-draggable-flatlist';
+import { Turno } from '../types';
+import { IconoTurno } from './IconoTurno';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 export function ListaTurnos({
   turnos,
@@ -11,59 +13,80 @@ export function ListaTurnos({
   turnos: Turno[];
   deleteTurno: (id: number) => Promise<void>;
 }) {
+  const [data, setData] = useState(turnos);
   const navigation = useNavigation<NavigationProp<any>>();
+
+  // Synchronize the local state with the turnos prop when it changes
+  useEffect(() => {
+    setData(turnos);
+  }, [turnos]);
+
+  const renderItem = ({ item, drag, isActive }) => {
+    return (
+      <View style={[styles.turno, { backgroundColor: isActive ? '#f0f0f0' : '#dadde3' }]}>
+        <TouchableOpacity
+          style={styles.content}
+          onPress={() => navigation.navigate('NewTurnoForm', { turno: item })}
+        >
+          <IconoTurno turno={item} />
+          <View style={{ paddingLeft: 10 }}>
+            <Text style={styles.nombre}>{item.nombre}</Text>
+            <Text>
+              ({item.hora_ini} - {item.hora_fin})
+              {item.partido !== 0 && (
+                <Text>
+                  ({item.hora_ini_partido} - {item.hora_fin_partido})
+                </Text>
+              )}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity onLongPress={drag} style={styles.dragHandle}>
+          <Icon name="bars" size={24} color="#000" />
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <View style={{ marginTop: 10 }}>
-      {turnos.map((turno) => {
-        return (
-          <TouchableOpacity
-            key={turno.turno_id}
-            style={styles.turno}
-            onLongPress={() => deleteTurno(turno.turno_id)}
-            onPress={() => navigation.navigate('NewTurnoForm', { turno })} // Step 3
-          >
-            <IconoTurno turno={turno} />
-            <View style={{ paddingLeft: 10 }}>
-              <Text style={styles.nombre}>{turno.nombre}</Text>
-              <Text>
-                ({turno.hora_ini} - {turno.hora_fin})
-                {turno.partido !== 0 && (
-                  <Text>
-                    ({turno.hora_ini_partido} - {turno.hora_fin_partido})
-                  </Text>
-                )}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        );
-      })}
+      <DraggableFlatList
+        data={data} // The array of items to render and sort
+        onDragEnd={({ data }) => setData(data)} // Update state with new order
+        keyExtractor={(item) => item.turno_id.toString()} // Unique key for each item
+        renderItem={renderItem} // Function to render each item
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   turno: {
-    flexDirection: "row",
+    flexDirection: 'row',
     padding: 15,
-    alignItems: "center",
-    backgroundColor: "#dadde3",
+    alignItems: 'center',
+    backgroundColor: '#dadde3',
     marginVertical: 6,
     marginHorizontal: 10,
     borderRadius: 10,
     elevation: 4,
   },
-
+  content: {
+    flexDirection: 'row',
+    flex: 1,
+    alignItems: 'center',
+  },
   nombre: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
-
   desc: {
     fontSize: 16,
   },
-
   turno_info: {
     marginLeft: 10,
+  },
+  dragHandle: {
+    padding: 10,
   },
 });

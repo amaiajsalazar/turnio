@@ -9,6 +9,7 @@ import { TurnioLogo } from "./assets/TurnioLogo";
 import { TurnosScreen } from "./screens/TurnosScreen";
 import { NewTurnoForm } from "./screens/NewTurnoForm";
 import { TurnoProvider } from "./contexts/TurnoContext";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const Stack = createNativeStackNavigator();
 
@@ -52,41 +53,43 @@ export default function App() {
 
   return (
     <>
-      <NavigationContainer>
-        <Suspense
-          fallback={
-            <View style={{ flex: 1 }}>
-              <ActivityIndicator color={"red"} size={"large"} />
-              <Text>Cargando base de datos...</Text>
-            </View>
-          }
-        >
-          <SQLiteProvider databaseName="turnio.db" useSuspense>
-            <TurnoProvider>
-              <Stack.Navigator>
-                <Stack.Screen
-                  name="TurnosScreen"
-                  component={TurnosScreen}
-                  options={{
-                    title: "Turnos",
-                    headerLargeStyle: true,
-                    headerRight: () => <TurnioLogo width={100} height={20} />,
-                  }}
+      <GestureHandlerRootView>
+        <NavigationContainer>
+          <Suspense
+            fallback={
+              <View style={{ flex: 1 }}>
+                <ActivityIndicator color={"red"} size={"large"} />
+                <Text>Cargando base de datos...</Text>
+              </View>
+            }
+          >
+            <SQLiteProvider databaseName="turnio.db" useSuspense>
+              <TurnoProvider>
+                <Stack.Navigator>
+                  <Stack.Screen
+                    name="TurnosScreen"
+                    component={TurnosScreen}
+                    options={{
+                      title: "Turnos",
+                      headerLargeStyle: true,
+                      headerRight: () => <TurnioLogo width={100} height={20} />,
+                    }}
                   />
-                <Stack.Screen
-                  name="NewTurnoForm"
-                  component={NewTurnoForm}
-                  options={{
-                    title: "Añadir Turno",
-                    headerLargeStyle: true,
-                    headerRight: () => <TurnioLogo width={100} height={20} />,
-                  }}
+                  <Stack.Screen
+                    name="NewTurnoForm"
+                    component={NewTurnoForm}
+                    options={{
+                      title: "Añadir Turno",
+                      headerLargeStyle: true,
+                      headerRight: () => <TurnioLogo width={100} height={20} />,
+                    }}
                   />
-              </Stack.Navigator>
-            </TurnoProvider>
-          </SQLiteProvider>
-        </Suspense>
-      </NavigationContainer>
+                </Stack.Navigator>
+              </TurnoProvider>
+            </SQLiteProvider>
+          </Suspense>
+        </NavigationContainer>
+      </GestureHandlerRootView>
     </>
   );
 }
