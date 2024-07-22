@@ -16,4 +16,5 @@ export interface Turno {
     hora_fin_partido: string | null; // use 'string | null' for optional time
     ingresos_hora: number | null;
     ingresos_hora_extra: number | null;
+    orden: number;
 }

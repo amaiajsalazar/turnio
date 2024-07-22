@@ -9,22 +9,27 @@ import {
 } from "react-native";
 import { useEffect, useState } from "react";
 import { Turno } from "../types";
-import { useNavigation, NavigationProp, useRoute } from "@react-navigation/native";
+import {
+  useNavigation,
+  NavigationProp,
+  useRoute,
+} from "@react-navigation/native";
 import { TimerPickerModal } from "react-native-timer-picker";
 import React from "react";
-import ColorPicker, { Panel5 } from 'reanimated-color-picker';
+import ColorPicker, { Panel5 } from "reanimated-color-picker";
 import { useTurno } from "../contexts/TurnoContext";
-
 
 export function NewTurnoForm() {
   const route = useRoute();
-  const { turno } = route.params as { turno?: Turno } || null;
+  const { turno } = (route.params as { turno?: Turno }) || null;
 
   const navigation = useNavigation<NavigationProp<any>>();
 
-  const { insertTurno, updateTurno } = useTurno();
+  const { insertTurno, updateTurno, getMaxOrden } = useTurno();
 
-  const [partidoSelected, setPartidoSelected] = useState<number>(turno && turno.partido ? turno.partido : 0);
+  const [partidoSelected, setPartidoSelected] = useState<number>(
+    turno && turno.partido ? turno.partido : 0
+  );
 
   const [turnoForm, setTurnoForm] = useState<Turno>({
     turno_id: turno && turno.turno_id ? turno.turno_id : 0,
@@ -35,25 +40,35 @@ export function NewTurnoForm() {
     abreviatura: turno && turno.abreviatura ? turno.abreviatura : "",
     descanso: turno && turno.descanso ? turno.descanso : "",
     partido: turno && turno.partido ? turno.partido : 0,
-    hora_ini_partido: turno && turno.hora_ini_partido ? turno.hora_ini_partido : null,
-    hora_fin_partido: turno && turno.hora_fin_partido ? turno.hora_fin_partido : null,
+    hora_ini_partido:
+      turno && turno.hora_ini_partido ? turno.hora_ini_partido : null,
+    hora_fin_partido:
+      turno && turno.hora_fin_partido ? turno.hora_fin_partido : null,
     ingresos_hora: turno && turno.ingresos_hora ? turno.ingresos_hora : null,
-    ingresos_hora_extra: turno && turno.ingresos_hora_extra ? turno.ingresos_hora_extra : null,
+    ingresos_hora_extra:
+      turno && turno.ingresos_hora_extra ? turno.ingresos_hora_extra : null,
+    orden: turno && turno.orden ? turno.orden : getMaxOrden(),
   });
 
-  console.log(turno);
-  console.log(turnoForm);
-
   //hora_ini, hora_fin, hora_ini_partido, hora_fin_partido, descanso
-  const [showPicker, setShowPicker] = useState<boolean[]>([false, false, false, false, false]);
+  const [showPicker, setShowPicker] = useState<boolean[]>([
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
   const [alarmStrings, setAlarmStrings] = useState<(string | null)[]>([
     turno ? turno.hora_ini : "00:00",
     turno ? turno.hora_fin : "00:00",
     turno ? turno.hora_ini_partido : null,
     turno ? turno.hora_fin_partido : null,
-    turno ? turno.descanso : "00:00"
+    turno ? turno.descanso : "00:00",
   ]);
-  const [turnoColor, setTurnoColor] = useState<string>(turno ? turno.color ?? "#bbbbbb" : "#bbbbbb");
+
+  const [turnoColor, setTurnoColor] = useState<string>(
+    turno ? turno.color ?? "#bbbbbb" : "#bbbbbb"
+  );
   const [showModal, setShowModal] = useState(false);
 
   const onSelectColor = ({ hex }) => {
@@ -96,8 +111,8 @@ export function NewTurnoForm() {
       turnoForm.descanso = alarmStrings[4] || "0:00";
       turnoForm.color = turnoColor;
 
-      console.log("HANDLE SAVE:");
-      console.log(turnoForm);
+      // console.log("HANDLE SAVE:");
+      // console.log(turnoForm);
       if (turnoForm.turno_id !== 0) {
         await updateTurno(turnoForm);
       } else {
@@ -116,8 +131,9 @@ export function NewTurnoForm() {
         hora_fin_partido: null,
         ingresos_hora: null,
         ingresos_hora_extra: null,
+        orden: getMaxOrden(),
       });
-      navigation.navigate('TurnosScreen');
+      navigation.navigate("TurnosScreen");
     }
   }
 
@@ -134,7 +150,10 @@ export function NewTurnoForm() {
     );
   };
 
-  const handlePickerConfirm = (index: number, pickedDuration: { hours?: number; minutes?: number }) => {
+  const handlePickerConfirm = (
+    index: number,
+    pickedDuration: { hours?: number; minutes?: number }
+  ) => {
     setAlarmStrings((prevAlarmStrings) =>
       prevAlarmStrings.map((item, i) =>
         i === index ? formatTime(pickedDuration) : item
@@ -156,13 +175,20 @@ export function NewTurnoForm() {
       <View style={styles.inputBox}>
         <Text style={styles.label}>Nombre:</Text>
         <TextInput
-          style={[styles.inputText, { width: '80%' }]}
+          style={[styles.inputText, { width: "80%" }]}
           placeholder="Nombre del turno"
           value={turnoForm.nombre}
           onChangeText={(value) => handleInputChange("nombre", value)}
         />
       </View>
-      <View style={{ flexDirection: "row", alignContent: "center", justifyContent: "space-around", marginVertical: 10 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignContent: "center",
+          justifyContent: "space-around",
+          marginVertical: 10,
+        }}
+      >
         <View style={{ width: "50%" }}>
           <Text style={[styles.label, { marginBottom: 6 }]}>Hora inicio:</Text>
           <TouchableOpacity
@@ -170,7 +196,9 @@ export function NewTurnoForm() {
             onPress={() => showPickerAtIndex(0)}
             style={[styles.inputText, { marginRight: 10 }]}
           >
-            <Text style={styles.timePickerInput}>{alarmStrings[0] || "00:00"}</Text>
+            <Text style={styles.timePickerInput}>
+              {alarmStrings[0] || "00:00"}
+            </Text>
           </TouchableOpacity>
         </View>
         <TimerPickerModal
@@ -199,8 +227,11 @@ export function NewTurnoForm() {
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => showPickerAtIndex(1)}
-            style={[styles.inputText, { marginRight: 10 }]}>
-            <Text style={styles.timePickerInput}>{alarmStrings[1] || "00:00"}</Text>
+            style={[styles.inputText, { marginRight: 10 }]}
+          >
+            <Text style={styles.timePickerInput}>
+              {alarmStrings[1] || "00:00"}
+            </Text>
           </TouchableOpacity>
         </View>
         <TimerPickerModal
@@ -231,8 +262,11 @@ export function NewTurnoForm() {
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => showPickerAtIndex(4)}
-            style={[styles.inputText, { marginRight: 10 }]}>
-            <Text style={styles.timePickerInput}>{alarmStrings[4] || "00:00"}</Text>
+            style={[styles.inputText, { marginRight: 10 }]}
+          >
+            <Text style={styles.timePickerInput}>
+              {alarmStrings[4] || "00:00"}
+            </Text>
           </TouchableOpacity>
         </View>
         <TimerPickerModal
@@ -254,9 +288,17 @@ export function NewTurnoForm() {
           hideSeconds
           modalProps={{
             overlayOpacity: 0.2,
-          }} />
+          }}
+        />
       </View>
-      <View style={{ flexDirection: "row", alignItems: "center", marginTop: 20, marginBottom: 10 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginTop: 20,
+          marginBottom: 10,
+        }}
+      >
         <Text style={styles.label}>Turno partido? </Text>
         <TouchableOpacity style={styles.container} onPress={handlePress}>
           <View style={[styles.checkbox, partidoSelected && styles.checked]}>
@@ -266,21 +308,34 @@ export function NewTurnoForm() {
         </TouchableOpacity>
       </View>
       {partidoSelected ? (
-        <View style={{ flexDirection: "row", alignContent: "center", justifyContent: "space-around", marginVertical: 10 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignContent: "center",
+            justifyContent: "space-around",
+            marginVertical: 10,
+          }}
+        >
           <View style={{ width: "50%" }}>
-            <Text style={[styles.label, { marginBottom: 6 }]}>Hora inicio:</Text>
+            <Text style={[styles.label, { marginBottom: 6 }]}>
+              Hora inicio:
+            </Text>
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => showPickerAtIndex(2)}
               style={[styles.inputText, { marginRight: 10 }]}
             >
-              <Text style={styles.timePickerInput}>{alarmStrings[2] || "00:00"}</Text>
+              <Text style={styles.timePickerInput}>
+                {alarmStrings[2] || "00:00"}
+              </Text>
             </TouchableOpacity>
           </View>
           <TimerPickerModal
             visible={showPicker[2]}
             setIsVisible={(value) => handlePickerCancel(2)}
-            onConfirm={(pickedDuration) => handlePickerConfirm(2, pickedDuration)}
+            onConfirm={(pickedDuration) =>
+              handlePickerConfirm(2, pickedDuration)
+            }
             modalTitle="Inicio partido"
             onCancel={() => handlePickerCancel(2)}
             closeOnOverlayPress
@@ -303,14 +358,19 @@ export function NewTurnoForm() {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => showPickerAtIndex(3)}
-              style={[styles.inputText, { marginRight: 10 }]}>
-              <Text style={styles.timePickerInput}>{alarmStrings[3] || "00:00"}</Text>
+              style={[styles.inputText, { marginRight: 10 }]}
+            >
+              <Text style={styles.timePickerInput}>
+                {alarmStrings[3] || "00:00"}
+              </Text>
             </TouchableOpacity>
           </View>
           <TimerPickerModal
             visible={showPicker[3]}
             setIsVisible={(value) => handlePickerCancel(3)}
-            onConfirm={(pickedDuration) => handlePickerConfirm(3, pickedDuration)}
+            onConfirm={(pickedDuration) =>
+              handlePickerConfirm(3, pickedDuration)
+            }
             modalTitle="Fin partido"
             onCancel={() => handlePickerCancel(3)}
             closeOnOverlayPress
@@ -329,10 +389,21 @@ export function NewTurnoForm() {
             }}
           />
         </View>
-      ) : null
-      }
-      <View style={{ flexDirection: "row", marginVertical: 10, alignItems: "center" }}>
-        <View style={{ flexDirection: "row", alignItems: "center", marginRight: 10 }}>
+      ) : null}
+      <View
+        style={{
+          flexDirection: "row",
+          marginVertical: 10,
+          alignItems: "center",
+        }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginRight: 10,
+          }}
+        >
           <Text style={styles.label}>Abreviatura:</Text>
           <TextInput
             style={[styles.inputText, { textAlign: "center" }]}
@@ -343,8 +414,7 @@ export function NewTurnoForm() {
         </View>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Text style={styles.label}>Color:</Text>
-          <TouchableOpacity
-            onPress={() => setShowModal(true)}>
+          <TouchableOpacity onPress={() => setShowModal(true)}>
             <View
               style={{
                 width: 45,
@@ -357,32 +427,72 @@ export function NewTurnoForm() {
           </TouchableOpacity>
         </View>
       </View>
-      <Modal visible={showModal} animationType='fade' transparent={true}>
+      <Modal visible={showModal} animationType="fade" transparent={true}>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <ColorPicker style={{ justifyContent: "center" }} value='red' onComplete={onSelectColor}>
+            <ColorPicker
+              style={{ justifyContent: "center" }}
+              value="red"
+              onComplete={onSelectColor}
+            >
               <Panel5 />
             </ColorPicker>
-            <Button title='Ok' onPress={() => setShowModal(false)} />
+            <Button title="Ok" onPress={() => setShowModal(false)} />
           </View>
         </View>
       </Modal>
 
       <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-        <TouchableOpacity style={{ paddingVertical: 10, width: "40%" }}
-          onPress={() => navigation.navigate('TurnosScreen')} // Step 3
+        <TouchableOpacity
+          style={{ paddingVertical: 10, width: "40%" }}
+          onPress={() => navigation.navigate("TurnosScreen")} // Step 3
         >
-          <View style={{ backgroundColor: "#62aac0", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 10 }}>
-            <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16, textAlign: "center" }}>CANCELAR</Text>
+          <View
+            style={{
+              backgroundColor: "#62aac0",
+              borderRadius: 10,
+              paddingVertical: 10,
+              paddingHorizontal: 10,
+            }}
+          >
+            <Text
+              style={{
+                color: "#fff",
+                fontWeight: "bold",
+                fontSize: 16,
+                textAlign: "center",
+              }}
+            >
+              CANCELAR
+            </Text>
           </View>
-        </TouchableOpacity >
-        <TouchableOpacity style={{ paddingVertical: 10, width: "40%" }} onPress={handleSave}>
-          <View style={{ backgroundColor: "#054b7f", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 10 }}>
-            <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16, textAlign: "center" }}>GUARDAR</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ paddingVertical: 10, width: "40%" }}
+          onPress={handleSave}
+        >
+          <View
+            style={{
+              backgroundColor: "#054b7f",
+              borderRadius: 10,
+              paddingVertical: 10,
+              paddingHorizontal: 10,
+            }}
+          >
+            <Text
+              style={{
+                color: "#fff",
+                fontWeight: "bold",
+                fontSize: 16,
+                textAlign: "center",
+              }}
+            >
+              GUARDAR
+            </Text>
           </View>
-        </TouchableOpacity >
+        </TouchableOpacity>
       </View>
-    </View >
+    </View>
   );
 }
 
@@ -432,7 +542,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
   },
   modalView: {
     margin: 20,
@@ -442,11 +552,11 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2
+      height: 2,
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    width: '80%', // Adjust width as needed
+    width: "80%", // Adjust width as needed
   },
 });

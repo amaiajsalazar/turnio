@@ -1,32 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import DraggableFlatList from 'react-native-draggable-flatlist';
-import { Turno } from '../types';
-import { IconoTurno } from './IconoTurno';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import DraggableFlatList from "react-native-draggable-flatlist";
+import { Turno } from "../types";
+import { IconoTurno } from "./IconoTurno";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import Icon from "react-native-vector-icons/FontAwesome";
+import { useTurno } from "../contexts/TurnoContext";
 
 export function ListaTurnos({
   turnos,
-  deleteTurno,
 }: {
   turnos: Turno[];
   deleteTurno: (id: number) => Promise<void>;
 }) {
   const [data, setData] = useState(turnos);
   const navigation = useNavigation<NavigationProp<any>>();
+  const { updateTurnoOrden } = useTurno();
 
   // Synchronize the local state with the turnos prop when it changes
   useEffect(() => {
     setData(turnos);
   }, [turnos]);
 
+  const onDragEnd = async ({ data }) => {
+    setData(data);
+    for (let index = 0; index < data.length; index++) {
+      const turno = data[index];
+      await updateTurnoOrden(turno.turno_id, index);
+    }
+  };
+
   const renderItem = ({ item, drag, isActive }) => {
     return (
-      <View style={[styles.turno, { backgroundColor: isActive ? '#f0f0f0' : '#dadde3' }]}>
+      <View
+        style={[
+          styles.turno,
+          { backgroundColor: isActive ? "#f0f0f0" : "#dadde3" },
+        ]}
+      >
         <TouchableOpacity
           style={styles.content}
-          onPress={() => navigation.navigate('NewTurnoForm', { turno: item })}
+          onPress={() => navigation.navigate("NewTurnoForm", { turno: item })}
         >
           <IconoTurno turno={item} />
           <View style={{ paddingLeft: 10 }}>
@@ -52,7 +66,7 @@ export function ListaTurnos({
     <View style={{ marginTop: 10 }}>
       <DraggableFlatList
         data={data} // The array of items to render and sort
-        onDragEnd={({ data }) => setData(data)} // Update state with new order
+        onDragEnd={onDragEnd} // Update state with new order
         keyExtractor={(item) => item.turno_id.toString()} // Unique key for each item
         renderItem={renderItem} // Function to render each item
       />
@@ -62,23 +76,23 @@ export function ListaTurnos({
 
 const styles = StyleSheet.create({
   turno: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 15,
-    alignItems: 'center',
-    backgroundColor: '#dadde3',
+    alignItems: "center",
+    backgroundColor: "#dadde3",
     marginVertical: 6,
     marginHorizontal: 10,
     borderRadius: 10,
     elevation: 4,
   },
   content: {
-    flexDirection: 'row',
+    flexDirection: "row",
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   nombre: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   desc: {
     fontSize: 16,

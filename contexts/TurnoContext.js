@@ -14,9 +14,15 @@ export const TurnoProvider = ({ children }) => {
   }, [db]);
 
   const getTurnos = async () => {
-    const result = await db.getAllAsync("SELECT * FROM turnos");
+    const result = await db.getAllAsync("SELECT * FROM turnos order by orden");
     setTurnos(result);
-    console.log(result);
+    // console.log(result);
+  };
+
+  const getMaxOrden = async () => {
+    const result = await db.getAsync("SELECT MAX(orden) AS maxOrden FROM turnos");
+    const maxOrden = result.maxOrden || 0;
+    return maxOrden + 1;
   };
 
   const insertTurno = async (newTurno) => {
@@ -71,9 +77,18 @@ export const TurnoProvider = ({ children }) => {
     });
   };
 
+  const updateTurnoOrden = async (turnoId, newOrden) => {
+    await db.withTransactionAsync(async () => {
+      await db.runAsync("UPDATE turnos set orden = ? where turno_id = ?", [newOrden, turnoId]);
+      await getTurnos();
+      console.log("turno: " + turnoId + " new orden:" + newOrden);
+    });
+
+  };
+
   return (
     <TurnoContext.Provider
-      value={{ turnos, insertTurno, deleteTurno, updateTurno }}
+      value={{ turnos, insertTurno, deleteTurno, updateTurno, getMaxOrden, updateTurnoOrden }}
     >
       {children}
     </TurnoContext.Provider>
