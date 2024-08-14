@@ -81,7 +81,7 @@ export const TurnoProvider = ({ children }) => {
     await db.withTransactionAsync(async () => {
       await db.runAsync("UPDATE turnos set orden = ? where turno_id = ?", [newOrden, turnoId]);
       await getTurnos();
-      console.log("turno: " + turnoId + " new orden:" + newOrden);
+      // console.log("turno: " + turnoId + " new orden:" + newOrden);
     });
 
   };

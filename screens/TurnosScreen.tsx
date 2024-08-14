@@ -1,9 +1,10 @@
 import { View, StyleSheet, TouchableHighlight, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ListaTurnos } from "../components/ListaTurnos";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTurno } from "../contexts/TurnoContext";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
+import React from "react";
 
 export function TurnosScreen() {
   const insets = useSafeAreaInsets();
@@ -24,7 +25,6 @@ export function TurnosScreen() {
   );
 }
 
-
 export function TurnoAddBtn() {
   const navigation = useNavigation<NavigationProp<any>>();
 
@@ -42,7 +42,6 @@ export function TurnoAddBtn() {
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   title: {

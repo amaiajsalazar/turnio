@@ -7,11 +7,10 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { useTurno } from "../contexts/TurnoContext";
 import { Swipeable } from "react-native-gesture-handler";
-import React from "react";
+import React = require("react");
 
 export function ListaTurnos({
   turnos,
-  deleteTurno,
 }: {
   turnos: Turno[];
   deleteTurno: (id: number) => Promise<void>;
@@ -44,35 +43,33 @@ export function ListaTurnos({
 
   const renderItem = ({ item, drag, isActive }) => {
     return (
-      <Swipeable renderRightActions={() => renderRightActions(item.turno_id)}>
-        <View
-          style={[
-            styles.turno,
-            { backgroundColor: isActive ? "#f0f0f0" : "#dadde3" },
-          ]}
+      <View
+        style={[
+          styles.turno,
+          { backgroundColor: isActive ? "#f0f0f0" : "#dadde3" },
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.content}
+          onPress={() => navigation.navigate("NewTurnoForm", { turno: item })}
         >
-          <TouchableOpacity
-            style={styles.content}
-            onPress={() => navigation.navigate("NewTurnoForm", { turno: item })}
-          >
-            <IconoTurno turno={item} />
-            <View style={{ paddingLeft: 10 }}>
-              <Text style={styles.nombre}>{item.nombre}</Text>
-              <Text>
-                ({item.hora_ini} - {item.hora_fin})
-                {item.partido !== 0 && (
-                  <Text>
-                    ({item.hora_ini_partido} - {item.hora_fin_partido})
-                  </Text>
-                )}
-              </Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity onLongPress={drag} style={styles.dragHandle}>
-            <Icon name="bars" size={24} color="#000" />
-          </TouchableOpacity>
-        </View>
-      </Swipeable>
+          <IconoTurno turno={item} />
+          <View style={{ paddingLeft: 10 }}>
+            <Text style={styles.nombre}>{item.nombre}</Text>
+            <Text>
+              ({item.hora_ini} - {item.hora_fin})
+              {item.partido !== 0 && (
+                <Text>
+                  ({item.hora_ini_partido} - {item.hora_fin_partido})
+                </Text>
+              )}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity onLongPress={drag} style={styles.dragHandle}>
+          <Icon name="bars" size={24} color="#000" />
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -129,3 +126,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+function deleteTurno(turnoId: any): void {
+  throw new Error("Function not implemented.");
+}

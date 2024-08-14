@@ -6,6 +6,7 @@ import {
   Button,
   TouchableOpacity,
   Modal,
+  Alert,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { Turno } from "../types";
@@ -15,9 +16,10 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import { TimerPickerModal } from "react-native-timer-picker";
-import React from "react";
 import ColorPicker, { Panel5 } from "reanimated-color-picker";
 import { useTurno } from "../contexts/TurnoContext";
+import { TouchableHighlight } from "react-native-gesture-handler";
+import React from "react";
 
 export function NewTurnoForm() {
   const route = useRoute();
@@ -25,7 +27,7 @@ export function NewTurnoForm() {
 
   const navigation = useNavigation<NavigationProp<any>>();
 
-  const { insertTurno, updateTurno, getMaxOrden } = useTurno();
+  const { insertTurno, updateTurno, getMaxOrden, deleteTurno } = useTurno();
 
   const [partidoSelected, setPartidoSelected] = useState<number>(
     turno && turno.partido ? turno.partido : 0
@@ -111,8 +113,6 @@ export function NewTurnoForm() {
       turnoForm.descanso = alarmStrings[4] || "0:00";
       turnoForm.color = turnoColor;
 
-      // console.log("HANDLE SAVE:");
-      // console.log(turnoForm);
       if (turnoForm.turno_id !== 0) {
         await updateTurno(turnoForm);
       } else {
@@ -133,13 +133,36 @@ export function NewTurnoForm() {
         ingresos_hora_extra: null,
         orden: getMaxOrden(),
       });
-      navigation.navigate("TurnosScreen");
+      navigation.navigate("Turnos");
     }
   }
 
   function handlePress() {
     setPartidoSelected((prevPartidoSelected) =>
       prevPartidoSelected === 0 ? 1 : 0
+    );
+  }
+
+  function confirmDelete() {
+    Alert.alert(
+      "Confirmar Eliminación",
+      "¿Estás seguro de que deseas eliminar este turno?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: async () => {
+            if (turnoForm.turno_id !== 0) {
+              await deleteTurno(turnoForm.turno_id);
+              navigation.navigate("Turnos");
+            }
+          },
+        },
+      ]
     );
   }
 
@@ -445,7 +468,7 @@ export function NewTurnoForm() {
       <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
         <TouchableOpacity
           style={{ paddingVertical: 10, width: "40%" }}
-          onPress={() => navigation.navigate("TurnosScreen")} // Step 3
+          onPress={() => navigation.navigate("Turnos")} // Step 3
         >
           <View
             style={{
@@ -492,6 +515,15 @@ export function NewTurnoForm() {
           </View>
         </TouchableOpacity>
       </View>
+      {/* <View style={styles.delContainer}>
+        <TouchableHighlight
+          style={styles.delBtn}
+          underlayColor="#DDDDDD"
+          onPress={deleteTurno(turnoForm.turno_id)}
+        >
+          <Text style={{ color: "red", fontWeight: "800" }}>🗑️ Borrar</Text>
+        </TouchableHighlight>
+      </View> */}
     </View>
   );
 }
@@ -558,5 +590,17 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     width: "80%", // Adjust width as needed
+  },
+  delBtn: {
+    textAlign: "center",
+    marginVertical: 20,
+    backgroundColor: "#f1a2a8",
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+  },
+  delContainer: {
+    justifyContent: "center", // Align children vertically in the center
+    alignItems: "center", // Align children horizontally in the center
   },
 });
